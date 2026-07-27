@@ -4,9 +4,15 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 const micBtn = document.getElementById('micBtn');
 const statusText = document.getElementById('statusText');
 const outputText = document.getElementById('outputText');
+
 const copyBtn = document.getElementById('copyBtn');
 const translateBtn = document.getElementById('translateBtn');
-const langSelect = document.getElementById('langSelect');
+const showOriginalBtn = document.getElementById('showOriginalBtn');
+
+const sourceLangSelect = document.getElementById('sourceLangSelect');
+const targetLangSelect = document.getElementById('targetLangSelect');
+
+let originalSpeechText = '';
 
 if (!SpeechRecognition) {
   statusText.textContent = 'Web Speech API is not supported in this browser. Use Chrome or Edge.';
@@ -16,7 +22,6 @@ if (!SpeechRecognition) {
 
   recognition.continuous = true;
   recognition.interimResults = true;
-  recognition.lang = 'en-US'; // Listening language defaults to English
 
   let isListening = false;
   let finalTranscript = '';
@@ -24,6 +29,12 @@ if (!SpeechRecognition) {
   // Toggle Mic
   micBtn.addEventListener('click', () => {
     if (!isListening) {
+      // Set speech engine language from source dropdown
+      const sourceLangCode = sourceLangSelect.value.split('|')[0];
+      recognition.lang = sourceLangCode;
+      
+      // Hide original toggle button when starting a new session
+      showOriginalBtn.style.display = 'none';
       recognition.start();
     } else {
       recognition.stop();
@@ -52,7 +63,10 @@ if (!SpeechRecognition) {
         interimTranscript += transcript;
       }
     }
-    outputText.value = finalTranscript + interimTranscript;
+    
+    // Store original speech and display it
+    originalSpeechText = finalTranscript + interimTranscript;
+    outputText.value = originalSpeechText;
   };
 
   recognition.onerror = (event) => {
@@ -70,7 +84,7 @@ if (!SpeechRecognition) {
     }
   });
 
-  // Translation Functionality (Using free MyMemory API)
+  // Translate Functionality
   translateBtn.addEventListener('click', async () => {
     const textToTranslate = outputText.value.trim();
     
@@ -79,26 +93,40 @@ if (!SpeechRecognition) {
       return;
     }
 
-    // Get selected target language code (e.g., 'es')
-    const selectedValue = langSelect.value;
-    const targetLangCode = selectedValue.split('|')[1];
+    // Save original before translating
+    if (!originalSpeechText) {
+      originalSpeechText = textToTranslate;
+    }
+
+    const sourceLangCode = sourceLangSelect.value.split('|')[1];
+    const targetLangCode = targetLangSelect.value;
 
     statusText.textContent = 'Translating...';
     
     try {
-      const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(textToTranslate)}&langpair=en|${targetLangCode}`;
+      const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(textToTranslate)}&langpair=${sourceLangCode}|${targetLangCode}`;
       const response = await fetch(apiUrl);
       const data = await response.json();
 
       if (data.responseData) {
         outputText.value = data.responseData.translatedText;
         statusText.textContent = 'Translation complete!';
+        showOriginalBtn.style.display = 'inline-block'; // Show button to revert
       } else {
         statusText.textContent = 'Translation failed. Try again.';
       }
     } catch (error) {
       console.error('Translation error:', error);
       statusText.textContent = 'Error fetching translation.';
+    }
+  });
+
+  // Revert back to original transcript
+  showOriginalBtn.addEventListener('click', () => {
+    if (originalSpeechText) {
+      outputText.value = originalSpeechText;
+      showOriginalBtn.style.display = 'none';
+      statusText.textContent = 'Original text restored.';
     }
   });
 }
