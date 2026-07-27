@@ -1,26 +1,27 @@
-// Check browser support for SpeechRecognition
+// Web Speech API
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 const micBtn = document.getElementById('micBtn');
 const statusText = document.getElementById('statusText');
 const outputText = document.getElementById('outputText');
 const copyBtn = document.getElementById('copyBtn');
+const translateBtn = document.getElementById('translateBtn');
+const langSelect = document.getElementById('langSelect');
 
 if (!SpeechRecognition) {
-  statusText.textContent = 'Web Speech API is not supported in this browser. Try Chrome or Edge.';
+  statusText.textContent = 'Web Speech API is not supported in this browser. Use Chrome or Edge.';
   micBtn.disabled = true;
 } else {
   const recognition = new SpeechRecognition();
 
-  // Settings
-  recognition.continuous = true;  // Keep listening until stopped manually
-  recognition.interimResults = true; // Show live text while speaking
-  recognition.lang = 'en-US';    // Set language (e.g., 'es-ES', 'hi-IN')
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US'; // Listening language defaults to English
 
   let isListening = false;
   let finalTranscript = '';
 
-  // Toggle microphone click
+  // Toggle Mic
   micBtn.addEventListener('click', () => {
     if (!isListening) {
       recognition.start();
@@ -29,24 +30,20 @@ if (!SpeechRecognition) {
     }
   });
 
-  // Event: Listening started
   recognition.onstart = () => {
     isListening = true;
     micBtn.classList.add('listening');
-    statusText.textContent = 'Listening... Click to stop';
+    statusText.textContent = 'Listening... Click mic to stop';
   };
 
-  // Event: Listening stopped
   recognition.onend = () => {
     isListening = false;
     micBtn.classList.remove('listening');
-    statusText.textContent = 'Click to Listen';
+    statusText.textContent = 'Click mic to start speaking';
   };
 
-  // Event: Speech recognized
   recognition.onresult = (event) => {
     let interimTranscript = '';
-
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const transcript = event.results[i][0].transcript;
       if (event.results[i].isFinal) {
@@ -55,25 +52,53 @@ if (!SpeechRecognition) {
         interimTranscript += transcript;
       }
     }
-
-    // Display transcript in text area
     outputText.value = finalTranscript + interimTranscript;
   };
 
-  // Event: Handle errors
   recognition.onerror = (event) => {
-    console.error('Speech recognition error:', event.error);
     statusText.textContent = `Error: ${event.error}`;
     micBtn.classList.remove('listening');
     isListening = false;
   };
 
-  // Copy button logic
+  // Copy to Clipboard
   copyBtn.addEventListener('click', () => {
     if (outputText.value.trim() !== '') {
       navigator.clipboard.writeText(outputText.value);
       copyBtn.textContent = 'Copied!';
       setTimeout(() => (copyBtn.textContent = 'Copy Text'), 2000);
+    }
+  });
+
+  // Translation Functionality (Using free MyMemory API)
+  translateBtn.addEventListener('click', async () => {
+    const textToTranslate = outputText.value.trim();
+    
+    if (!textToTranslate) {
+      alert('Please speak or type some text first!');
+      return;
+    }
+
+    // Get selected target language code (e.g., 'es')
+    const selectedValue = langSelect.value;
+    const targetLangCode = selectedValue.split('|')[1];
+
+    statusText.textContent = 'Translating...';
+    
+    try {
+      const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(textToTranslate)}&langpair=en|${targetLangCode}`;
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+
+      if (data.responseData) {
+        outputText.value = data.responseData.translatedText;
+        statusText.textContent = 'Translation complete!';
+      } else {
+        statusText.textContent = 'Translation failed. Try again.';
+      }
+    } catch (error) {
+      console.error('Translation error:', error);
+      statusText.textContent = 'Error fetching translation.';
     }
   });
 }
