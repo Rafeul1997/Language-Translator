@@ -11,8 +11,77 @@ const showOriginalBtn = document.getElementById('showOriginalBtn');
 
 const sourceLangSelect = document.getElementById('sourceLangSelect');
 const targetLangSelect = document.getElementById('targetLangSelect');
+const audioFileInput = document.getElementById('audioFileInput');
 
 let originalSpeechText = '';
+const validExtensions = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'webm'];
+
+// File Upload Handler
+audioFileInput.addEventListener('change', (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const fileExtension = file.name.split('.').pop().toLowerCase();
+
+  // Validate extension
+  if (!validExtensions.includes(fileExtension)) {
+    alert('Only audio files (.mp3, .wav, .m4a, .ogg, .flac, .aac) can be uploaded!');
+    event.target.value = ''; // Reset input
+    return;
+  }
+
+  statusText.textContent = `Loaded audio: ${file.name}`;
+
+  // Process uploaded audio
+  processAudioFile(file);
+});
+
+function processAudioFile(file) {
+  // Create object URL to stream the audio through browser speech recognition
+  const audioUrl = URL.createObjectURL(file);
+  const audio = new Audio(audioUrl);
+
+  showOriginalBtn.style.display = 'none';
+
+  if (SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = sourceLangSelect.value.split('|')[0];
+
+    statusText.textContent = 'Transcribing uploaded audio...';
+
+    recognition.onresult = (event) => {
+      let finalTranscript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript + ' ';
+        }
+      }
+      if (finalTranscript) {
+        originalSpeechText = finalTranscript;
+        outputText.value = originalSpeechText;
+      }
+    };
+
+    recognition.onend = () => {
+      statusText.textContent = 'Audio transcription complete!';
+    };
+
+    recognition.onerror = () => {
+      statusText.textContent = 'File loaded. Play audio via mic to transcribe.';
+    };
+
+    try {
+      recognition.start();
+      audio.play();
+    } catch (e) {
+      statusText.textContent = `File ready: ${file.name}`;
+    }
+  } else {
+    statusText.textContent = `Loaded audio: ${file.name}`;
+  }
+}
 
 if (!SpeechRecognition) {
   statusText.textContent = 'Web Speech API is not supported in this browser. Use Chrome or Edge.';
@@ -29,11 +98,9 @@ if (!SpeechRecognition) {
   // Toggle Mic
   micBtn.addEventListener('click', () => {
     if (!isListening) {
-      // Set speech engine language from source dropdown
       const sourceLangCode = sourceLangSelect.value.split('|')[0];
       recognition.lang = sourceLangCode;
       
-      // Hide original toggle button when starting a new session
       showOriginalBtn.style.display = 'none';
       recognition.start();
     } else {
@@ -50,7 +117,7 @@ if (!SpeechRecognition) {
   recognition.onend = () => {
     isListening = false;
     micBtn.classList.remove('listening');
-    statusText.textContent = 'Click mic to start speaking';
+    statusText.textContent = 'Click mic or upload audio to transcribe';
   };
 
   recognition.onresult = (event) => {
@@ -64,7 +131,6 @@ if (!SpeechRecognition) {
       }
     }
     
-    // Store original speech and display it
     originalSpeechText = finalTranscript + interimTranscript;
     outputText.value = originalSpeechText;
   };
@@ -89,11 +155,10 @@ if (!SpeechRecognition) {
     const textToTranslate = outputText.value.trim();
     
     if (!textToTranslate) {
-      alert('Please speak or type some text first!');
+      alert('Please speak or upload audio first!');
       return;
     }
 
-    // Save original before translating
     if (!originalSpeechText) {
       originalSpeechText = textToTranslate;
     }
@@ -111,7 +176,7 @@ if (!SpeechRecognition) {
       if (data.responseData) {
         outputText.value = data.responseData.translatedText;
         statusText.textContent = 'Translation complete!';
-        showOriginalBtn.style.display = 'inline-block'; // Show button to revert
+        showOriginalBtn.style.display = 'inline-block';
       } else {
         statusText.textContent = 'Translation failed. Try again.';
       }
