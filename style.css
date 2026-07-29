@@ -1,227 +1,476 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* ==========================
+   Global
+========================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:"Segoe UI",sans-serif;
 }
 
-body {
-  background-color: #f4f7f6;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
+body{
+    background:#f3f5f9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+    padding:20px;
 }
 
-.app-container {
-  background: #ffffff;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-  width: 100%;
-  max-width: 600px;
-  text-align: center;
+/* ==========================
+   Main Card
+========================== */
+
+.app-container{
+
+    width:100%;
+    max-width:700px;
+
+    background:#fff;
+
+    border-radius:18px;
+
+    padding:30px;
+
+    box-shadow:
+    0 10px 30px rgba(0,0,0,.12);
+
 }
 
-h1 {
-  color: #2c3e50;
-  margin-bottom: 6px;
+/* ==========================
+   Heading
+========================== */
+
+h1{
+
+    text-align:center;
+    color:#222;
+
+    margin-bottom:8px;
+
 }
 
-.subtitle {
-  color: #7f8c8d;
-  font-size: 0.95rem;
-  margin-bottom: 20px;
+.subtitle{
+
+    text-align:center;
+
+    color:#777;
+
+    margin-bottom:25px;
+
 }
 
-/* Language Selection Row */
-.language-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
+/* ==========================
+   Language
+========================== */
+
+.language-bar{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    flex-wrap:wrap;
+
+    gap:15px;
+
+    margin-bottom:20px;
+
 }
 
-.lang-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #555;
+.lang-group{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:5px;
+
 }
 
-.arrow {
-  color: #888;
-  font-size: 0.9rem;
+.arrow{
+
+    font-size:25px;
+
+    margin-top:18px;
+
 }
 
-select {
-  padding: 6px 10px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 0.85rem;
-  outline: none;
-  cursor: pointer;
-  background-color: #fcfcfc;
+/* ==========================
+   Select
+========================== */
+
+select{
+
+    padding:10px;
+
+    border-radius:10px;
+
+    border:1px solid #ccc;
+
+    min-width:180px;
+
+    font-size:15px;
+
 }
 
-.textbox-wrapper {
-  position: relative;
-  margin-bottom: 16px;
+/* ==========================
+   Text Area
+========================== */
+
+.textbox-wrapper{
+
+    position:relative;
+
 }
 
-textarea {
-  width: 100%;
-  height: 190px;
-  padding: 16px;
-  font-size: 1rem;
-  line-height: 1.5;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  resize: vertical;
-  outline: none;
-  background-color: #fafafa;
-  transition: border-color 0.2s;
+textarea{
+
+    width:100%;
+
+    height:220px;
+
+    resize:none;
+
+    border-radius:12px;
+
+    border:2px solid #ddd;
+
+    padding:15px;
+
+    font-size:16px;
+
+    outline:none;
+
 }
 
-textarea:focus {
-  border-color: #3498db;
+textarea:focus{
+
+    border-color:#2196f3;
+
 }
 
-.copy-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: #edf2f7;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: background 0.2s;
+/* ==========================
+   Copy Button
+========================== */
+
+.copy-btn{
+
+    position:absolute;
+
+    top:12px;
+
+    right:12px;
+
+    border:none;
+
+    background:#4CAF50;
+
+    color:#fff;
+
+    padding:8px 15px;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
 }
 
-.copy-btn:hover {
-  background: #e2e8f0;
+.copy-btn:hover{
+
+    background:#43a047;
+
 }
 
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
+/* ==========================
+   Action Buttons
+========================== */
+
+.action-buttons{
+
+    display:flex;
+
+    justify-content:center;
+
+    gap:15px;
+
+    margin-top:20px;
+
 }
 
-.translate-btn {
-  background-color: #2ecc71;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+.translate-btn,
+.secondary-btn{
+
+    border:none;
+
+    color:white;
+
+    padding:12px 25px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-size:15px;
+
 }
 
-.translate-btn:hover {
-  background-color: #27ae60;
+.translate-btn{
+
+    background:#1976d2;
+
 }
 
-.secondary-btn {
-  background-color: #95a5a6;
-  color: white;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+.translate-btn:hover{
+
+    background:#1565c0;
+
 }
 
-.secondary-btn:hover {
-  background-color: #7f8c8d;
+.secondary-btn{
+
+    background:#616161;
+
 }
 
-/* Audio File Upload Box */
-.upload-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding: 12px;
-  background-color: #fcfcfc;
-  border: 1px dashed #d0d0d0;
-  border-radius: 10px;
+.secondary-btn:hover{
+
+    background:#424242;
+
 }
 
-.upload-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #555;
+/* ==========================
+   Microphone
+========================== */
+
+.controls{
+
+    margin-top:30px;
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    gap:15px;
+
 }
 
-#audioFileInput {
-  font-size: 0.85rem;
-  color: #333;
-  cursor: pointer;
+.mic-btn{
+
+    width:90px;
+
+    height:90px;
+
+    border-radius:50%;
+
+    border:none;
+
+    background:#e53935;
+
+    color:white;
+
+    font-size:35px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
 }
 
-.controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+.mic-btn:hover{
+
+    transform:scale(1.05);
+
 }
 
-.mic-btn {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-  transition: all 0.2s ease-in-out;
+.listening{
+
+    animation:pulse 1s infinite;
+
 }
 
-.mic-btn:hover {
-  transform: scale(1.05);
-  background-color: #2980b9;
+/* ==========================
+   Pulse Animation
+========================== */
+
+@keyframes pulse{
+
+0%{
+
+transform:scale(1);
+
+box-shadow:0 0 0 0 rgba(229,57,53,.5);
+
 }
 
-.mic-btn.listening {
-  background-color: #e74c3c;
-  animation: pulse 1.5s infinite;
+70%{
+
+transform:scale(1.08);
+
+box-shadow:0 0 0 18px rgba(229,57,53,0);
+
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
-  }
-  70% {
-    transform: scale(1);
-    box-shadow: 0 0 0 15px rgba(231, 76, 60, 0);
-  }
-  100% {
-    transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
-  }
+100%{
+
+transform:scale(1);
+
 }
 
-.status-text {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #555;
+}
+
+/* ==========================
+   Status
+========================== */
+
+.status-text{
+
+    font-size:15px;
+
+    color:#666;
+
+}
+
+/* ==========================
+   Upload
+========================== */
+
+.upload-section{
+
+    margin-top:35px;
+
+    text-align:center;
+
+}
+
+.upload-btn{
+
+    background:#ff9800;
+
+    color:white;
+
+    border:none;
+
+    padding:14px 28px;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+}
+
+.upload-btn:hover{
+
+    background:#fb8c00;
+
+}
+
+/* ==========================
+   Audio Player
+========================== */
+
+audio{
+
+    margin-top:20px;
+
+    width:100%;
+
+}
+
+/* ==========================
+   Loading Spinner
+========================== */
+
+.loader{
+
+    width:45px;
+
+    height:45px;
+
+    border:5px solid #ddd;
+
+    border-top:5px solid #2196f3;
+
+    border-radius:50%;
+
+    animation:spin 1s linear infinite;
+
+    margin:auto;
+
+    display:none;
+
+}
+
+@keyframes spin{
+
+100%{
+
+transform:rotate(360deg);
+
+}
+
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media(max-width:650px){
+
+.app-container{
+
+padding:18px;
+
+}
+
+.language-bar{
+
+flex-direction:column;
+
+}
+
+.arrow{
+
+display:none;
+
+}
+
+select{
+
+width:100%;
+
+}
+
+textarea{
+
+height:180px;
+
+}
+
+.action-buttons{
+
+flex-direction:column;
+
+}
+
+.translate-btn,
+.secondary-btn{
+
+width:100%;
+
+}
+
+.upload-btn{
+
+width:100%;
+
+}
+
 }
