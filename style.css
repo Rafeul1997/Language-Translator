@@ -32,26 +32,7 @@ h1 {
 .subtitle {
   color: #7f8c8d;
   font-size: 0.95rem;
-  margin-bottom: 16px;
-}
-
-/* API Key Input Container */
-.api-key-container {
-  margin-bottom: 16px;
-}
-
-.api-key-container input {
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 0.85rem;
-  outline: none;
-  background-color: #fafafa;
-}
-
-.api-key-container input:focus {
-  border-color: #3498db;
+  margin-bottom: 20px;
 }
 
 /* Language Selection Row */
