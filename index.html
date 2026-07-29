@@ -9,7 +9,7 @@
 <body>
   <div class="app-container">
     <h1>Speech & Translator</h1>
-    <p class="subtitle">Speak to transcribe, then translate into any language.</p>
+    <p class="subtitle">Speak or upload recording to transcribe, then translate into any language.</p>
 
     <!-- Language Selectors Row -->
     <div class="language-bar">
@@ -60,6 +60,18 @@
       <button id="showOriginalBtn" class="secondary-btn" style="display: none;">↩ Show Original</button>
     </div>
 
+    <!-- Audio File Upload Input -->
+    <div class="upload-container">
+      <label for="audioFileInput" class="upload-label">
+        Upload Audio Recording (Audio files only: .mp3, .wav, .m4a, .ogg, .flac)
+      </label>
+      <input 
+        type="file" 
+        id="audioFileInput" 
+        accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac,.aac"
+      />
+    </div>
+
     <!-- Mic Control -->
     <div class="controls">
       <button id="micBtn" class="mic-btn" aria-label="Toggle Microphone">
@@ -67,7 +79,7 @@
           <path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
         </svg>
       </button>
-      <span id="statusText" class="status-text">Click mic to start speaking</span>
+      <span id="statusText" class="status-text">Click mic or upload audio to transcribe</span>
     </div>
   </div>
 
