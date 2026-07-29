@@ -1,132 +1,154 @@
-// Web Speech API
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let mediaRecorder;
+let audioChunks = [];
+let activeAudioBlob = null;
 
-const micBtn = document.getElementById('micBtn');
-const statusText = document.getElementById('statusText');
-const outputText = document.getElementById('outputText');
+// ⚠️ PASTE YOUR OPENAI API KEY HERE FOR TESTING
+// Note: Exposing keys client-side is visible to the public if your GitHub repo is public.
+const OPENAI_API_KEY = "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
 
-const copyBtn = document.getElementById('copyBtn');
-const translateBtn = document.getElementById('translateBtn');
-const showOriginalBtn = document.getElementById('showOriginalBtn');
+"; 
 
-const sourceLangSelect = document.getElementById('sourceLangSelect');
-const targetLangSelect = document.getElementById('targetLangSelect');
+// --- OPTION 1: LIVE RECORDING LOGIC ---
+async function startRecording() {
+  audioChunks = [];
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream);
 
-let originalSpeechText = '';
+    mediaRecorder.ondataavailable = (event) => {
+      if (event.data.size > 0) audioChunks.push(event.data);
+    };
 
-if (!SpeechRecognition) {
-  statusText.textContent = 'Web Speech API is not supported in this browser. Use Chrome or Edge.';
-  micBtn.disabled = true;
-} else {
-  const recognition = new SpeechRecognition();
-
-  recognition.continuous = true;
-  recognition.interimResults = true;
-
-  let isListening = false;
-  let finalTranscript = '';
-
-  // Toggle Mic
-  micBtn.addEventListener('click', () => {
-    if (!isListening) {
-      // Set speech engine language from source dropdown
-      const sourceLangCode = sourceLangSelect.value.split('|')[0];
-      recognition.lang = sourceLangCode;
+    mediaRecorder.onstop = async () => {
+      activeAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      setupAudioPreview(activeAudioBlob);
       
-      // Hide original toggle button when starting a new session
-      showOriginalBtn.style.display = 'none';
-      recognition.start();
+      // Automatically transcribe audio via OpenAI Whisper API
+      await transcribeAudio(activeAudioBlob);
+    };
+
+    mediaRecorder.start();
+    document.getElementById('recordBtn').disabled = true;
+    document.getElementById('stopBtn').disabled = false;
+    document.getElementById('sourceText').value = "Recording audio live...";
+  } catch (error) {
+    console.error("Microphone access error:", error);
+    alert("Could not access microphone. Please check browser permissions.");
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== "inactive") {
+    mediaRecorder.stop();
+    mediaRecorder.stream.getTracks().forEach(track => track.stop()); // Turn off hardware mic light
+    document.getElementById('recordBtn').disabled = false;
+    document.getElementById('stopBtn').disabled = true;
+  }
+}
+
+// --- OPTION 2: FILE UPLOAD LOGIC ---
+async function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  activeAudioBlob = file;
+  setupAudioPreview(file);
+  
+  // Automatically transcribe uploaded audio via OpenAI Whisper API
+  await transcribeAudio(file);
+}
+
+// --- SHARED AUDIO PREVIEW HELPER ---
+function setupAudioPreview(blobOrFile) {
+  const audioUrl = URL.createObjectURL(blobOrFile);
+  const audioPlayback = document.getElementById('audioPlayback');
+  audioPlayback.src = audioUrl;
+  document.getElementById('playbackContainer').style.display = 'block';
+}
+
+// --- OPENAI WHISPER STT FUNCTION ---
+async function transcribeAudio(audioBlob) {
+  if (!OPENAI_API_KEY || OPENAI_API_KEY.includes("YOUR_OPENAI_API_KEY")) {
+    alert("Please add your OpenAI API key in script.js");
+    return;
+  }
+
+  document.getElementById('sourceText').value = "Transcribing audio with OpenAI Whisper...";
+
+  const formData = new FormData();
+  formData.append("file", audioBlob, "audio.webm");
+  formData.append("model", "whisper-1");
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_API_KEY}`
+      },
+      body: formData
+    });
+
+    const data = await response.json();
+    if (data.text) {
+      document.getElementById('sourceText').value = data.text;
     } else {
-      recognition.stop();
+      document.getElementById('sourceText').value = "[Transcription failed]";
+      console.error(data);
     }
-  });
+  } catch (error) {
+    console.error("Whisper API error:", error);
+    document.getElementById('sourceText').value = "[Error connecting to Whisper API]";
+  }
+}
 
-  recognition.onstart = () => {
-    isListening = true;
-    micBtn.classList.add('listening');
-    statusText.textContent = 'Listening... Click mic to stop';
-  };
+// --- OPENAI CHAT/TRANSLATION FUNCTION ---
+async function handleTranslation() {
+  const text = document.getElementById('sourceText').value;
+  const targetLang = document.getElementById('targetLang').value;
 
-  recognition.onend = () => {
-    isListening = false;
-    micBtn.classList.remove('listening');
-    statusText.textContent = 'Click mic to start speaking';
-  };
+  if (!text.trim() || text.includes("Transcribing")) {
+    alert("Please provide valid text or audio first.");
+    return;
+  }
 
-  recognition.onresult = (event) => {
-    let interimTranscript = '';
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript;
-      if (event.results[i].isFinal) {
-        finalTranscript += transcript + ' ';
-      } else {
-        interimTranscript += transcript;
-      }
+  if (!OPENAI_API_KEY || OPENAI_API_KEY.includes("YOUR_OPENAI_API_KEY")) {
+    alert("Please add your OpenAI API key in script.js");
+    return;
+  }
+
+  document.getElementById('translatedOutput').innerText = `Translating via OpenAI GPT...`;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a professional translator. Translate the following text accurately into ${targetLang}. Return ONLY the translated text.`
+          },
+          {
+            role: "user",
+            content: text
+          }
+        ],
+        temperature: 0.3
+      })
+    });
+
+    const data = await response.json();
+    if (data.choices && data.choices.length > 0) {
+      document.getElementById('translatedOutput').innerText = data.choices[0].message.content.trim();
+    } else {
+      document.getElementById('translatedOutput').innerText = "Translation failed.";
     }
-    
-    // Store original speech and display it
-    originalSpeechText = finalTranscript + interimTranscript;
-    outputText.value = originalSpeechText;
-  };
-
-  recognition.onerror = (event) => {
-    statusText.textContent = `Error: ${event.error}`;
-    micBtn.classList.remove('listening');
-    isListening = false;
-  };
-
-  // Copy to Clipboard
-  copyBtn.addEventListener('click', () => {
-    if (outputText.value.trim() !== '') {
-      navigator.clipboard.writeText(outputText.value);
-      copyBtn.textContent = 'Copied!';
-      setTimeout(() => (copyBtn.textContent = 'Copy Text'), 2000);
-    }
-  });
-
-  // Translate Functionality
-  translateBtn.addEventListener('click', async () => {
-    const textToTranslate = outputText.value.trim();
-    
-    if (!textToTranslate) {
-      alert('Please speak or type some text first!');
-      return;
-    }
-
-    // Save original before translating
-    if (!originalSpeechText) {
-      originalSpeechText = textToTranslate;
-    }
-
-    const sourceLangCode = sourceLangSelect.value.split('|')[1];
-    const targetLangCode = targetLangSelect.value;
-
-    statusText.textContent = 'Translating...';
-    
-    try {
-      const apiUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(textToTranslate)}&langpair=${sourceLangCode}|${targetLangCode}`;
-      const response = await fetch(apiUrl);
-      const data = await response.json();
-
-      if (data.responseData) {
-        outputText.value = data.responseData.translatedText;
-        statusText.textContent = 'Translation complete!';
-        showOriginalBtn.style.display = 'inline-block'; // Show button to revert
-      } else {
-        statusText.textContent = 'Translation failed. Try again.';
-      }
-    } catch (error) {
-      console.error('Translation error:', error);
-      statusText.textContent = 'Error fetching translation.';
-    }
-  });
-
-  // Revert back to original transcript
-  showOriginalBtn.addEventListener('click', () => {
-    if (originalSpeechText) {
-      outputText.value = originalSpeechText;
-      showOriginalBtn.style.display = 'none';
-      statusText.textContent = 'Original text restored.';
-    }
-  });
+  } catch (error) {
+    console.error("OpenAI API error:", error);
+    document.getElementById('translatedOutput').innerText = "Error connecting to OpenAI translation API.";
+  }
 }
