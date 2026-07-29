@@ -1,88 +1,162 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Speech to Text & Translator</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech to Text & Translator</title>
+
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-  <div class="app-container">
-    <h1>Speech & Translator</h1>
-    <p class="subtitle">Speak or upload an audio recording to transcribe, then translate into any language.</p>
 
-    <!-- Language Selectors Row -->
+<div class="app-container">
+
+    <h1>🎤 Speech & Translator</h1>
+    <p class="subtitle">
+        Speak live or upload an audio file, then translate into any language.
+    </p>
+
+    <!-- Language Selection -->
+
     <div class="language-bar">
-      <div class="lang-group">
-        <label for="sourceLangSelect">Speaking:</label>
-        <select id="sourceLangSelect">
-          <option value="en-US|en">English</option>
-          <option value="es-ES|es">Spanish</option>
-          <option value="fr-FR|fr">French</option>
-          <option value="de-DE|de">German</option>
-          <option value="hi-IN|hi">Hindi</option>
-          <option value="zh-CN|zh">Chinese</option>
-          <option value="ja-JP|ja">Japanese</option>
-          <option value="ar-SA|ar">Arabic</option>
-          <option value="pt-PT|pt">Portuguese</option>
-          <option value="ru-RU|ru">Russian</option>
-        </select>
-      </div>
 
-      <span class="arrow">➜</span>
+        <div class="lang-group">
+            <label>Speaking:</label>
 
-      <div class="lang-group">
-        <label for="targetLangSelect">Translate to:</label>
-        <select id="targetLangSelect">
-          <option value="es">Spanish</option>
-          <option value="fr">French</option>
-          <option value="de">German</option>
-          <option value="en">English</option>
-          <option value="hi">Hindi</option>
-          <option value="zh">Chinese</option>
-          <option value="ja">Japanese</option>
-          <option value="ar">Arabic</option>
-          <option value="pt">Portuguese</option>
-          <option value="ru">Russian</option>
-        </select>
-      </div>
+            <select id="sourceLangSelect">
+                <option value="en-US|en">English</option>
+                <option value="hi-IN|hi">Hindi</option>
+                <option value="bn-IN|bn">Bengali</option>
+                <option value="es-ES|es">Spanish</option>
+                <option value="fr-FR|fr">French</option>
+                <option value="de-DE|de">German</option>
+                <option value="ja-JP|ja">Japanese</option>
+                <option value="zh-CN|zh">Chinese</option>
+                <option value="ar-SA|ar">Arabic</option>
+                <option value="ru-RU|ru">Russian</option>
+            </select>
+        </div>
+
+        <span class="arrow">➜</span>
+
+        <div class="lang-group">
+
+            <label>Translate To:</label>
+
+            <select id="targetLangSelect">
+
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="bn">Bengali</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="ja">Japanese</option>
+                <option value="zh">Chinese</option>
+                <option value="ar">Arabic</option>
+                <option value="ru">Russian</option>
+
+            </select>
+
+        </div>
+
     </div>
 
-    <!-- Single Main Text Area -->
+    <!-- Output -->
+
     <div class="textbox-wrapper">
-      <textarea id="outputText" placeholder="Your transcribed speech will appear here..."></textarea>
-      <button id="copyBtn" class="copy-btn">Copy Text</button>
+
+        <textarea
+            id="outputText"
+            placeholder="Speech or transcription will appear here..."
+        ></textarea>
+
+        <button id="copyBtn" class="copy-btn">
+            Copy
+        </button>
+
     </div>
 
-    <!-- Actions -->
+    <!-- Buttons -->
+
     <div class="action-buttons">
-      <button id="translateBtn" class="translate-btn">🌐 Translate Text</button>
-      <button id="showOriginalBtn" class="secondary-btn" style="display: none;">↩ Show Original</button>
+
+        <button id="translateBtn" class="translate-btn">
+            🌐 Translate
+        </button>
+
+        <button
+            id="showOriginalBtn"
+            class="secondary-btn"
+            style="display:none;"
+        >
+            ↩ Original
+        </button>
+
     </div>
 
-    <!-- Audio File Upload Section -->
-    <div class="upload-container">
-      <label for="audioFileInput" class="upload-label">
-        Upload Recording (Audio files only: .mp3, .wav, .m4a, .ogg, .flac)
-      </label>
-      <input 
-        type="file" 
-        id="audioFileInput" 
-        accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac,.aac"
-      />
-    </div>
+    <!-- Live Mic -->
 
-    <!-- Mic Control -->
     <div class="controls">
-      <button id="micBtn" class="mic-btn" aria-label="Toggle Microphone">
-        <svg class="mic-icon" viewBox="0 0 24 24" width="32" height="32">
-          <path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
-        </svg>
-      </button>
-      <span id="statusText" class="status-text">Click mic or upload audio to transcribe</span>
-    </div>
-  </div>
 
-  <script src="script.js"></script>
+        <button
+            id="micBtn"
+            class="mic-btn">
+
+            🎤
+
+        </button>
+
+        <span
+            id="statusText"
+            class="status-text">
+
+            Click microphone to start
+
+        </span>
+
+    </div>
+
+    <br>
+
+    <hr>
+
+    <br>
+
+    <!-- Upload Audio -->
+
+    <div class="upload-section">
+
+        <button
+            id="uploadAudioBtn"
+            class="upload-btn">
+
+            📁 Upload Audio File
+
+        </button>
+
+        <input
+            type="file"
+            id="audioFile"
+            accept="audio/*"
+            hidden>
+
+    </div>
+
+    <br>
+
+    <!-- Audio Preview -->
+
+    <audio
+        id="audioPreview"
+        controls
+        style="display:none;width:100%;">
+    </audio>
+
+</div>
+
+<script src="script.js"></script>
+
 </body>
 </html>
