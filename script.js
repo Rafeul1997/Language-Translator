@@ -19,7 +19,9 @@ let originalSpeechText = '';
 const validExtensions = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'webm'];
 
 // OPENAI API KEY (Replace with your newly generated OpenAI Key)
-const OPENAI_API_KEY = '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';
+const OPENAI_API_KEY = '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
+
+';
 
 // File Upload Handler
 audioFileInput.addEventListener('change', (event) => {
