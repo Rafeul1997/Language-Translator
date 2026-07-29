@@ -14,7 +14,12 @@ const targetLangSelect = document.getElementById('targetLangSelect');
 const audioFileInput = document.getElementById('audioFileInput');
 
 let originalSpeechText = '';
+
+// Allowed audio extensions
 const validExtensions = ['mp3', 'wav', 'm4a', 'ogg', 'flac', 'aac', 'webm'];
+
+// OPENAI API KEY (Replace with your newly generated OpenAI Key)
+const OPENAI_API_KEY = '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';
 
 // File Upload Handler
 audioFileInput.addEventListener('change', (event) => {
@@ -25,64 +30,53 @@ audioFileInput.addEventListener('change', (event) => {
 
   // Validate extension
   if (!validExtensions.includes(fileExtension)) {
-    alert('Only audio files (.mp3, .wav, .m4a, .ogg, .flac, .aac) can be uploaded!');
+    alert('Invalid file format! Only audio files (.mp3, .wav, .m4a, .ogg, .flac) can be uploaded.');
     event.target.value = ''; // Reset input
     return;
   }
 
-  statusText.textContent = `Loaded audio: ${file.name}`;
-
-  // Process uploaded audio
-  processAudioFile(file);
+  // Process and transcribe uploaded audio file using Whisper API
+  transcribeAudioFile(file);
 });
 
-function processAudioFile(file) {
-  // Create object URL to stream the audio through browser speech recognition
-  const audioUrl = URL.createObjectURL(file);
-  const audio = new Audio(audioUrl);
-
+async function transcribeAudioFile(file) {
+  statusText.textContent = `Transcribing ${file.name}...`;
   showOriginalBtn.style.display = 'none';
 
-  if (SpeechRecognition) {
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = sourceLangSelect.value.split('|')[0];
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('model', 'whisper-1');
 
-    statusText.textContent = 'Transcribing uploaded audio...';
+  // Optional: Pass language code to improve accuracy
+  const sourceLang = sourceLangSelect.value.split('|')[1];
+  formData.append('language', sourceLang);
 
-    recognition.onresult = (event) => {
-      let finalTranscript = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript + ' ';
-        }
-      }
-      if (finalTranscript) {
-        originalSpeechText = finalTranscript;
-        outputText.value = originalSpeechText;
-      }
-    };
+  try {
+    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`
+      },
+      body: formData
+    });
 
-    recognition.onend = () => {
+    const data = await response.json();
+
+    if (data.text) {
+      originalSpeechText = data.text;
+      outputText.value = originalSpeechText;
       statusText.textContent = 'Audio transcription complete!';
-    };
-
-    recognition.onerror = () => {
-      statusText.textContent = 'File loaded. Play audio via mic to transcribe.';
-    };
-
-    try {
-      recognition.start();
-      audio.play();
-    } catch (e) {
-      statusText.textContent = `File ready: ${file.name}`;
+    } else {
+      console.error('Whisper API Error:', data);
+      statusText.textContent = 'Transcription failed. Check API key or file format.';
     }
-  } else {
-    statusText.textContent = `Loaded audio: ${file.name}`;
+  } catch (error) {
+    console.error('API Request Error:', error);
+    statusText.textContent = 'Error connecting to transcription service.';
   }
 }
 
+// Microphone / Web Speech Setup
 if (!SpeechRecognition) {
   statusText.textContent = 'Web Speech API is not supported in this browser. Use Chrome or Edge.';
   micBtn.disabled = true;
@@ -155,7 +149,7 @@ if (!SpeechRecognition) {
     const textToTranslate = outputText.value.trim();
     
     if (!textToTranslate) {
-      alert('Please speak or upload audio first!');
+      alert('Please speak or upload an audio file first!');
       return;
     }
 
