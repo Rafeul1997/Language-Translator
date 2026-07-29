@@ -3,7 +3,6 @@ let audioChunks = [];
 let activeAudioBlob = null;
 
 // ⚠️ PASTE YOUR OPENAI API KEY HERE FOR TESTING
-// Note: Exposing keys client-side is visible to the public if your GitHub repo is public.
 const OPENAI_API_KEY = "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
 
 "; 
@@ -13,14 +12,26 @@ async function startRecording() {
   audioChunks = [];
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder = new MediaRecorder(stream);
+    
+    // Check browser-supported MIME types to prevent recording crashes
+    let mimeType = 'audio/webm';
+    if (!MediaRecorder.isTypeSupported(mimeType)) {
+      mimeType = 'audio/mp4'; // Fallback for Safari/iOS
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = ''; // Let browser use default if neither is explicitly supported
+      }
+    }
+
+    mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
 
     mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) audioChunks.push(event.data);
     };
 
     mediaRecorder.onstop = async () => {
-      activeAudioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      // Use the recorded mime type if available, otherwise default to webm
+      const blobType = mimeType || 'audio/webm';
+      activeAudioBlob = new Blob(audioChunks, { type: blobType });
       setupAudioPreview(activeAudioBlob);
       
       // Automatically transcribe audio via OpenAI Whisper API
@@ -33,7 +44,7 @@ async function startRecording() {
     document.getElementById('sourceText').value = "Recording audio live...";
   } catch (error) {
     console.error("Microphone access error:", error);
-    alert("Could not access microphone. Please check browser permissions.");
+    alert("Could not access microphone. Please check if your browser has microphone permissions enabled.");
   }
 }
 
