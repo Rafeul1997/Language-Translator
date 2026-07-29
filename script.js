@@ -1,6 +1,12 @@
-// ================================
-// Speech & Translator JavaScript
-// ================================
+// ==========================================
+// Speech To Text + OpenAI Translator
+// ==========================================
+
+
+// OpenAI API Key
+const OPENAI_API_KEY = "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
+
+";
 
 
 // Elements
@@ -32,129 +38,148 @@ document.getElementById("audioPreview");
 
 
 
-
-// Variables
-
-let recognition;
-
 let originalText = "";
 
 
 
 
-// ================================
-// Speech Recognition
-// ================================
+// ==========================================
+// LIVE SPEECH TO TEXT
+// ==========================================
 
 
-if ("webkitSpeechRecognition" in window ||
-    "SpeechRecognition" in window) {
+let recognition;
 
 
-    const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
+if(
+window.SpeechRecognition ||
+window.webkitSpeechRecognition
+){
 
 
-
-    recognition = new SpeechRecognition();
-
-
-
-    recognition.continuous = false;
-
-    recognition.interimResults = true;
+const SpeechRecognition =
+window.SpeechRecognition ||
+window.webkitSpeechRecognition;
 
 
 
-    recognition.onstart = function(){
+recognition = new SpeechRecognition();
 
-        statusText.innerHTML =
-        "Listening...";
 
-        micBtn.classList.add("listening");
+recognition.continuous = false;
 
-    };
+recognition.interimResults = true;
 
 
 
-    recognition.onresult = function(event){
+recognition.onstart=function(){
 
 
-        let text = "";
+statusText.innerHTML =
+"Listening...";
 
 
-        for(
-        let i=event.resultIndex;
-        i<event.results.length;
-        i++
-        ){
+micBtn.classList.add(
+"listening"
+);
 
-            text +=
-            event.results[i][0].transcript;
 
-        }
+};
 
 
 
-        outputText.value = text;
 
-    };
-
+recognition.onresult=function(event){
 
 
-    recognition.onerror=function(event){
-
-        statusText.innerHTML =
-        "Error: "+event.error;
-
-    };
+let text="";
 
 
+for(
+let i=event.resultIndex;
+i<event.results.length;
+i++
+){
 
-    recognition.onend=function(){
-
-        statusText.innerHTML =
-        "Click microphone to start";
-
-
-        micBtn.classList.remove("listening");
-
-    };
+text +=
+event.results[i][0].transcript;
 
 
 }
+
+
+outputText.value=text;
+
+
+};
+
+
+
+
+recognition.onerror=function(event){
+
+
+statusText.innerHTML =
+"Error : "+event.error;
+
+
+};
+
+
+
+recognition.onend=function(){
+
+
+statusText.innerHTML =
+"Click microphone to start";
+
+
+micBtn.classList.remove(
+"listening"
+);
+
+
+};
+
+
+
+}
+
+
 
 else{
 
 
-    alert(
-    "Speech recognition not supported"
-    );
+alert(
+"Speech Recognition not supported"
+);
 
 
 }
 
 
 
-// Start microphone
+
 
 micBtn.onclick=function(){
 
 
-    if(recognition){
+if(recognition){
 
 
-        let lang =
-        sourceLangSelect.value.split("|")[0];
+let lang =
+sourceLangSelect.value
+.split("|")[0];
 
 
-        recognition.lang = lang;
+recognition.lang=lang;
 
 
-        recognition.start();
+recognition.start();
 
-    }
+
+}
+
 
 };
 
@@ -163,21 +188,24 @@ micBtn.onclick=function(){
 
 
 
-// ================================
-// Translation
-// ================================
+// ==========================================
+// OPENAI GPT TRANSLATION
+// ==========================================
 
 
-translateBtn.onclick = async function(){
+translateBtn.onclick=function(){
 
 
-let text = outputText.value.trim();
+let text =
+outputText.value.trim();
 
 
 
 if(text===""){
 
-alert("Enter text first");
+alert(
+"Enter text first"
+);
 
 return;
 
@@ -185,12 +213,34 @@ return;
 
 
 
-originalText = text;
+originalText=text;
 
 
 
-let target =
-targetLangSelect.value;
+let targetLanguage =
+targetLangSelect.options[
+targetLangSelect.selectedIndex
+].text;
+
+
+
+translateText(
+text,
+targetLanguage
+);
+
+
+
+};
+
+
+
+
+
+async function translateText(
+text,
+language
+){
 
 
 
@@ -204,29 +254,63 @@ try{
 
 let response =
 await fetch(
-"https://libretranslate.de/translate",
+"https://api.openai.com/v1/chat/completions",
 {
+
 
 method:"POST",
 
+
 headers:{
 
+
 "Content-Type":
-"application/json"
+"application/json",
+
+
+"Authorization":
+"Bearer "+OPENAI_API_KEY
+
 
 },
 
 
 body:JSON.stringify({
 
-q:text,
 
-source:
-sourceLangSelect.value.split("|")[1],
+model:"gpt-4.1-mini",
 
-target:target,
 
-format:"text"
+messages:[
+
+
+{
+
+
+role:"system",
+
+
+content:
+"You are a professional translator."
+
+
+},
+
+
+{
+
+
+role:"user",
+
+
+content:
+`Translate this into ${language}:\n\n${text}`
+
+
+}
+
+
+]
 
 
 })
@@ -236,14 +320,15 @@ format:"text"
 
 
 
-
 let data =
 await response.json();
 
 
 
 outputText.value =
-data.translatedText;
+data.choices[0]
+.message
+.content;
 
 
 
@@ -260,26 +345,24 @@ catch(error){
 
 
 outputText.value =
-"Translation failed";
+"Translation Error : "+error;
 
 
-console.log(error);
+}
 
 
 }
 
 
 
-};
 
 
 
 
 
-
-// ================================
-// Show Original Text
-// ================================
+// ==========================================
+// SHOW ORIGINAL
+// ==========================================
 
 
 showOriginalBtn.onclick=function(){
@@ -296,9 +379,10 @@ originalText;
 
 
 
-// ================================
-// Copy Button
-// ================================
+
+// ==========================================
+// COPY BUTTON
+// ==========================================
 
 
 copyBtn.onclick=function(){
@@ -309,15 +393,21 @@ outputText.value
 );
 
 
+
 copyBtn.innerHTML =
 "Copied ✓";
 
 
+
 setTimeout(()=>{
 
-copyBtn.innerHTML="Copy";
+
+copyBtn.innerHTML =
+"Copy";
+
 
 },1500);
+
 
 
 };
@@ -328,9 +418,11 @@ copyBtn.innerHTML="Copy";
 
 
 
-// ================================
-// Audio Upload
-// ================================
+
+// ==========================================
+// AUDIO UPLOAD
+// OPENAI WHISPER SPEECH TO TEXT
+// ==========================================
 
 
 uploadAudioBtn.onclick=function(){
@@ -352,23 +444,28 @@ let file =
 audioFile.files[0];
 
 
+if(!file)
+return;
 
-if(file){
 
+
+// Audio Preview
 
 let url =
 URL.createObjectURL(file);
 
 
-
 audioPreview.src=url;
-
 
 audioPreview.style.display =
 "block";
 
 
-}
+
+// Send to Whisper
+
+speechToText(file);
+
 
 
 };
@@ -377,10 +474,99 @@ audioPreview.style.display =
 
 
 
-// ================================
-// Keyboard Shortcut
-// Ctrl + Enter Translate
-// ================================
+
+
+
+async function speechToText(file){
+
+
+outputText.value =
+"Converting speech...";
+
+
+
+let formData =
+new FormData();
+
+
+
+formData.append(
+"file",
+file
+);
+
+
+
+formData.append(
+"model",
+"whisper-1"
+);
+
+
+
+try{
+
+
+let response =
+await fetch(
+"https://api.openai.com/v1/audio/transcriptions",
+{
+
+
+method:"POST",
+
+
+headers:{
+
+
+"Authorization":
+"Bearer "+OPENAI_API_KEY
+
+
+},
+
+
+body:formData
+
+
+});
+
+
+
+let data =
+await response.json();
+
+
+
+outputText.value =
+data.text;
+
+
+
+}
+
+
+catch(error){
+
+
+outputText.value =
+"Speech Error : "+error;
+
+
+}
+
+
+
+}
+
+
+
+
+
+
+// ==========================================
+// CTRL + ENTER TRANSLATE
+// ==========================================
 
 
 outputText.addEventListener(
@@ -388,7 +574,10 @@ outputText.addEventListener(
 function(e){
 
 
-if(e.ctrlKey && e.key==="Enter"){
+if(
+e.ctrlKey &&
+e.key==="Enter"
+){
 
 translateBtn.click();
 
